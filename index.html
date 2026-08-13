@@ -1,0 +1,1167 @@
+<title>AI 시대의 보안팀 — PNS Portal 소개</title>
+<style>
+  :root {
+    --ink: #1c1a17;
+    --ink-soft: #5c564d;
+    --muted: #8b8477;
+    --paper: #fdfcfb;
+    --surface: #ffffff;
+    --surface-2: #f6f3ef;
+    --border: #e7e1d8;
+    --border-soft: #efeae2;
+    --accent: #ea580c;
+    --accent-strong: #b8450a;
+    --accent-soft: #fde3ce;
+    --accent-soft-border: #f6b784;
+    --good: #0f9b7e;
+    --good-strong: #0b7a63;
+    --good-soft: #d7f5ec;
+    --good-soft-border: #a8e6d4;
+    --shadow: 0 1px 2px rgba(28, 26, 23, 0.05), 0 8px 24px rgba(28, 26, 23, 0.07);
+
+    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+      'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --ink: #f2f4f2;
+      --ink-soft: #c7ccc6;
+      --muted: #8b928a;
+      --paper: #070808;
+      --surface: #121312;
+      --surface-2: #191b1a;
+      --border: #2a2d2b;
+      --border-soft: #232524;
+      --accent: #2fd9a8;
+      --accent-strong: #7ceac6;
+      --accent-soft: #12332b;
+      --accent-soft-border: #1e5245;
+      --good: #2fd9a8;
+      --good-strong: #7ceac6;
+      --good-soft: #12332b;
+      --good-soft-border: #1e5245;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --ink: #f2f4f2;
+    --ink-soft: #c7ccc6;
+    --muted: #8b928a;
+    --paper: #070808;
+    --surface: #121312;
+    --surface-2: #191b1a;
+    --border: #2a2d2b;
+    --border-soft: #232524;
+    --accent: #2fd9a8;
+    --accent-strong: #7ceac6;
+    --accent-soft: #12332b;
+    --accent-soft-border: #1e5245;
+    --good: #2fd9a8;
+    --good-strong: #7ceac6;
+    --good-soft: #12332b;
+    --good-soft-border: #1e5245;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  a { color: var(--accent-strong); }
+
+  /* ---------- sticky deck header ---------- */
+  .deck-header {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 20px;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .deck-header__title {
+    display: flex; align-items: baseline; gap: 10px; min-width: 0;
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .deck-header__title b { color: var(--ink); font-weight: 700; font-family: var(--font-sans); font-size: 13.5px; letter-spacing: 0; }
+  .deck-header__right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .deck-progress { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink-soft); min-width: 52px; text-align: right; }
+  .print-btn {
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.03em; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 6px 11px; cursor: pointer;
+  }
+  .print-btn:hover { border-color: var(--accent-soft-border); color: var(--accent-strong); }
+  .print-btn:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- stage / deck (one slide visible at a time, fits the viewport) ---------- */
+  .stage {
+    flex: 1; width: 100%; max-width: 1680px; margin: 0 auto;
+    padding: 20px 28px 84px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .slide {
+    display: none;
+    position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: var(--shadow); padding: clamp(24px, 3.4vw, 44px) clamp(28px, 4.8vw, 56px);
+    width: 100%;
+    height: calc(100vh - 150px);
+    height: calc(100dvh - 150px);
+    overflow-y: auto;
+    flex-direction: column; scroll-margin-top: 64px;
+  }
+  .slide.active { display: flex; }
+  .slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); border-radius: 8px 8px 0 0; opacity: 0.9; }
+
+  /* swoosh-in-and-settle transition when navigating between slides */
+  @keyframes slideEnterNext { from { transform: translateX(64px) scale(0.985); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
+  @keyframes slideEnterPrev { from { transform: translateX(-64px) scale(0.985); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
+  .slide.enter-next { animation: slideEnterNext 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+  .slide.enter-prev { animation: slideEnterPrev 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+  @media (prefers-reduced-motion: reduce) {
+    .slide.enter-next, .slide.enter-prev { animation: none; }
+  }
+
+  /* ---------- bottom slide navigator ---------- */
+  .slide-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    padding: 12px 20px; background: color-mix(in srgb, var(--paper) 90%, transparent);
+    backdrop-filter: blur(10px); border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 700; padding: 9px 18px;
+    border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer;
+  }
+  .nav-btn:hover:not(:disabled) { border-color: var(--accent-soft-border); color: var(--accent-strong); }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .nav-count { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--muted); min-width: 56px; text-align: center; }
+
+  .slide-head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .crumb-group { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; row-gap: 4px; }
+  .act-tag { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent-strong); flex-shrink: 0; }
+  .sep { color: var(--border); font-family: var(--font-mono); font-size: 11px; }
+  .crumb { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--muted); }
+  .crumb .arrow { color: var(--border); margin: 0 3px; }
+  .crumb b { color: var(--ink-soft); font-weight: 600; }
+  .slide-idx { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  .headline { font-size: clamp(22px, 2.8vw, 32px); font-weight: 800; line-height: 1.22; letter-spacing: -0.01em; text-wrap: balance; margin: 0 0 10px; }
+  .subhead { font-size: 14.5px; color: var(--ink-soft); line-height: 1.6; max-width: 70ch; margin: 0 0 10px; }
+  .point { font-size: 13.5px; font-weight: 700; color: var(--accent-strong); margin: 0 0 16px; line-height: 1.5; }
+
+  .body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+
+  ul.bullets { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; max-width: 78ch; }
+  ul.bullets li { position: relative; padding-left: 22px; font-size: 16px; line-height: 1.62; color: var(--ink); }
+  ul.bullets li::before { content: ''; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; background: var(--accent); border-radius: 1px; }
+  ul.bullets li b { font-weight: 700; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+  @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+
+  .highlight-box { background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 6px; padding: 20px 24px; }
+  .highlight-box .k { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent-strong); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+  .highlight-box .v { font-size: 14.5px; line-height: 1.6; }
+  .highlight-box.fill { display: flex; flex-direction: column; justify-content: center; padding: 40px 36px; }
+  .highlight-box.fill .k { font-size: 13px; margin-bottom: 16px; }
+  .highlight-box.fill .v { font-size: 18px; line-height: 1.6; font-weight: 600; }
+
+  .tag { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.02em; color: var(--ink-soft); background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; width: fit-content; }
+
+  .module-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 720px) { .module-grid { grid-template-columns: repeat(2, 1fr); } }
+  .module-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px 18px 17px; background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .module-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .module-icon.mint { background: var(--good); }
+  .module-icon svg { width: 20px; height: 20px; }
+  .module-card .name { font-size: 14.5px; font-weight: 700; }
+  .module-card .desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .module-card .tag { margin-top: 2px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 640px) { .stat-row { grid-template-columns: 1fr; } }
+  .stat { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); padding: 28px 20px; }
+  .stat .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: clamp(34px, 4.6vw, 50px); font-weight: 700; color: var(--accent-strong); line-height: 1; }
+  .stat .lbl { font-size: 12.5px; color: var(--muted); }
+
+  .info-grid { display: grid; grid-template-columns: 120px 1fr; gap: 14px 20px; max-width: 84ch; }
+  .info-grid dt { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent-strong); padding-top: 2px; }
+  .info-grid dd { margin: 0; font-size: 14.5px; line-height: 1.58; color: var(--ink); }
+  @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } .info-grid dt { padding-top: 10px; } }
+
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 9px; }
+  .chip { font-size: 13px; padding: 6px 13px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2); color: var(--ink); }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+  .compare .col { border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; }
+  .compare .col.on { background: var(--accent-soft); border-color: var(--accent-soft-border); }
+  .compare .col h4 { margin: 0 0 14px; font-size: 12px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 700; }
+  .compare .col.on h4 { color: var(--accent-strong); }
+  .compare ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .compare li { font-size: 14px; line-height: 1.5; padding-left: 14px; position: relative; }
+  .compare li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
+
+  /* ---------- cover ---------- */
+  .cover { justify-content: center; position: relative; overflow: hidden; background: var(--surface); }
+  .cover .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .cover .blob-1 { width: 780px; height: 780px; right: -260px; top: -320px; background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .cover .blob-2 { width: 480px; height: 480px; right: 10px; top: -150px; background: color-mix(in srgb, var(--good) 22%, transparent); }
+  .cover .blob-3 { width: 340px; height: 340px; left: -150px; bottom: -160px; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .cover .blob-4 { width: 200px; height: 200px; right: 90px; bottom: -90px; background: color-mix(in srgb, var(--good) 12%, transparent); }
+  .cover-content { position: relative; z-index: 1; max-width: 860px; }
+  .cover .kicker { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; color: var(--accent-strong); text-transform: uppercase; margin-bottom: 26px; font-weight: 700; }
+  .cover h1 { font-size: clamp(38px, 4.6vw, 66px); font-weight: 800; line-height: 1.14; letter-spacing: -0.015em; margin: 0 0 18px; text-wrap: balance; }
+  .cover .lede { font-size: 18px; color: var(--ink-soft); line-height: 1.6; max-width: 56ch; margin: 0 0 38px; }
+  .cover .meta { display: flex; gap: 30px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 20px; }
+  .cover .meta b { color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+
+  /* ---------- people pictogram (n / 100) — fills its column, square grid ---------- */
+  .people-box { display: flex; flex-direction: column; gap: 12px; justify-self: stretch; width: 100%; padding: 18px 22px; overflow: hidden; }
+  .people-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .people-top .k { font-size: 13px; }
+  .people-reveal-btn {
+    flex-shrink: 0; font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+    padding: 8px 15px; border-radius: 6px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  }
+  .people-reveal-btn.done { background: var(--surface); color: var(--accent-strong); }
+  .people-grid-wrap { position: relative; width: 100%; max-width: min(420px, 34vh, 34dvh); margin: 0 auto; }
+  .people-headline {
+    display: flex; align-items: baseline; gap: 9px; max-height: 0; opacity: 0; overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.4s ease; margin-bottom: 0;
+  }
+  .people-headline.shown { max-height: 50px; opacity: 1; margin-bottom: 10px; }
+  .people-headline .big { font-family: var(--font-mono); font-size: 34px; font-weight: 800; color: var(--accent-strong); line-height: 1; }
+  .people-headline .of { font-size: 13px; color: var(--muted); }
+  .people-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; width: 100%; }
+  .pico { width: 100%; aspect-ratio: 1 / 1; display: block; fill: var(--border); opacity: 0.5; transform: scale(1); transition: fill 0.3s, opacity 0.3s, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .pico.on { fill: var(--accent-strong); opacity: 1; transform: scale(1.12); }
+  @media (prefers-reduced-motion: reduce) { .pico { transition: fill 0.2s, opacity 0.2s; } .pico.on { transform: none; } }
+  .people-legend { display: flex; flex-direction: row; flex-wrap: wrap; gap: 5px 16px; font-size: 12px; color: var(--muted); }
+  .people-legend .lg { display: flex; align-items: center; gap: 6px; }
+  .people-legend .sw { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+  .people-legend .sw.on { background: var(--accent-strong); }
+  .people-legend .sw.off { background: var(--border); opacity: 0.5; }
+
+  /* ---------- static screen mock (design-only, non-interactive) ---------- */
+  .screen-mock { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 16px 18px 18px; }
+  .screen-mock-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .screen-mock-top .sm-title { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+  .sm-btn { font-family: var(--font-sans); font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 6px; background: var(--accent); color: #fff; }
+  .sm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+  .sm-stat { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; background: var(--surface-2); }
+  .sm-stat .n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1.2; }
+  .sm-stat .l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .sm-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .sm-table th { text-align: left; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); padding: 0 10px 8px; border-bottom: 1px solid var(--border); }
+  .sm-table td { padding: 9px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  .sm-table tr:last-child td { border-bottom: none; }
+  .sm-type { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); }
+  .sm-summary { font-weight: 600; }
+  .sm-badge { display: inline-flex; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .sm-badge.done { background: var(--good); border-color: var(--good); color: #fff; }
+  .sm-badge.ok { background: var(--good-soft); border-color: var(--good-soft-border); color: var(--good-strong); }
+
+  /* ---------- table of contents ---------- */
+  .toc-list { display: flex; flex-direction: column; gap: 0; max-width: 100%; }
+  .toc-row { display: flex; align-items: baseline; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+  .toc-row.sub { padding: 7px 0 7px 30px; border-bottom: 1px dashed var(--border-soft); break-inside: avoid; }
+  .toc-sub-group { columns: 2; column-gap: 28px; }
+  .toc-act { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--accent-strong); letter-spacing: 0.05em; flex-shrink: 0; width: 60px; }
+  .toc-label { font-size: 14.5px; font-weight: 700; flex-shrink: 0; }
+  .toc-row.sub .toc-label { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .toc-en { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); font-weight: 500; margin-left: 7px; }
+  .toc-leader { flex: 1; align-self: flex-end; height: 1px; margin: 0 4px 4px; border-bottom: 1px dotted var(--border); }
+  .toc-row.sub .toc-leader { border-bottom: none; }
+  .toc-page { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 13px; color: var(--muted); flex-shrink: 0; min-width: 34px; text-align: right; }
+
+  /* ================= interactive demo (form -> submit -> approve) ================= */
+  .demo { border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); padding: 18px 20px 20px; }
+  .demo-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .demo-steps { display: flex; gap: 6px; flex-shrink: 0; }
+  .demo-step-dot {
+    width: 21px; height: 21px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+    transition: background 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s;
+  }
+  .demo-step-dot::before { content: attr(data-n); }
+  .demo-step-dot.done { background: var(--good-soft); border-color: var(--good-soft-border); color: var(--good-strong); }
+  .demo-step-dot.active { background: var(--good); border-color: var(--good); color: #fff; box-shadow: 0 0 0 3px var(--good-soft); }
+  .demo-caption { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); flex: 1; min-width: 220px; }
+  .demo-caption span { display: none; }
+  .demo.step-1 .demo-caption [data-cap='1'],
+  .demo.step-2 .demo-caption [data-cap='2'],
+  .demo.step-3 .demo-caption [data-cap='3'],
+  .demo.step-4 .demo-caption [data-cap='4'] { display: inline; }
+  .demo-actions { display: flex; gap: 10px; flex-shrink: 0; }
+  .demo-btn { font-family: var(--font-sans); font-size: 12.5px; font-weight: 700; padding: 8px 15px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+  .demo-btn.primary { background: var(--good); border-color: var(--good); color: #fff; }
+  .demo-btn.primary:disabled { opacity: 0.4; cursor: default; }
+  .demo-btn.ghost:hover { border-color: var(--accent-soft-border); color: var(--accent-strong); }
+
+  .demo-stage.two-col { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; align-items: start; }
+  @media (max-width: 760px) { .demo-stage.two-col { grid-template-columns: 1fr; } }
+
+  .demo-form { display: grid; grid-template-columns: 1fr 1fr; gap: 13px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 18px 20px; transition: opacity 0.3s; }
+  .demo.submitted .demo-form { opacity: 0.55; pointer-events: none; }
+  .df { display: flex; flex-direction: column; gap: 6px; }
+  .df.wide { grid-column: 1 / -1; }
+  .df-label { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); }
+  .df-input, .df-textarea {
+    font-family: var(--font-sans); font-size: 13px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 5px;
+    background: var(--surface); color: var(--ink); width: 100%; transition: background 0.35s, border-color 0.35s; resize: none;
+  }
+  .df-textarea { min-height: 44px; }
+  .df-input.filled, .df-textarea.filled { background: var(--accent-soft); border-color: var(--accent-soft-border); }
+  .df-radio-row { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 2px; }
+  .df-radio-opt { font-size: 12px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; color: var(--ink-soft); background: var(--surface); transition: all 0.25s; }
+  .df-radio-opt.selected { background: var(--good); border-color: var(--good); color: #fff; font-weight: 700; }
+  .df-file { border: 1px dashed var(--border); border-radius: 6px; padding: 13px; font-size: 12.5px; color: var(--muted); text-align: center; transition: all 0.3s; }
+  .df-file.filled { border-style: solid; border-color: var(--good-soft-border); background: var(--good-soft); color: var(--good-strong); font-weight: 700; }
+
+  .demo-submit-row { grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: 2px; }
+  .demo-submit-btn { font-family: var(--font-sans); font-size: 12.5px; font-weight: 700; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); }
+  .demo.step-2 .demo-submit-btn { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .demo.submitted .demo-submit-btn { background: var(--surface-2); color: var(--muted); border-color: var(--border); }
+
+  .demo-queue { border: 1px solid var(--border); border-radius: 7px; padding: 18px 20px; background: var(--surface); display: flex; flex-direction: column; gap: 11px; opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; }
+  .demo.step-3 .demo-queue, .demo.step-4 .demo-queue { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .demo-queue .qk { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-queue .qsummary { font-size: 12.5px; font-weight: 700; line-height: 1.4; }
+  .demo-queue .qmeta { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); width: fit-content; }
+  .status-badge.pending { color: var(--accent-strong); border-color: var(--accent-soft-border); background: var(--accent-soft); }
+  .status-badge.approved { display: none; color: var(--good-strong); border-color: var(--good-soft-border); background: var(--good-soft); }
+  .demo.step-4 .status-badge.pending { display: none; }
+  .demo.step-4 .status-badge.approved { display: inline-flex; }
+  .approve-line { display: none; font-size: 12px; color: var(--good-strong); font-weight: 600; line-height: 1.5; padding-top: 2px; border-top: 1px dashed var(--border); margin-top: 2px; }
+  .demo.step-4 .approve-line { display: block; }
+
+  /* chatbot-specific reveal */
+  .chat-stage { max-width: 640px; }
+  .chat-stage .demo-submit-row { margin-top: 16px; }
+  .chat-loading { display: none; font-family: var(--font-mono); font-size: 12px; color: var(--accent-strong); margin-top: 10px; }
+  .demo.step-3:not(.step-4) .chat-loading { display: block; }
+  .chat-answer { display: none; margin-top: 14px; border: 1px solid var(--border); border-radius: 7px; padding: 15px 17px; background: var(--surface); }
+  .demo.step-4 .chat-answer { display: block; }
+  .chat-answer .qk { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .chat-answer p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.65; }
+  .chat-refs { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ================= library search + viewer demo ================= */
+  .lib-demo { display: flex; flex-direction: column; gap: 16px; }
+  .lib-search { width: 100%; max-width: 420px; font-family: var(--font-sans); font-size: 13.5px; padding: 9px 13px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  .lib-body { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
+  @media (max-width: 780px) { .lib-body { grid-template-columns: 1fr; } }
+  .lib-list { border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--surface); }
+  .lib-row { display: flex; flex-direction: column; gap: 3px; padding: 12px 15px; border-bottom: 1px solid var(--border-soft); cursor: pointer; transition: background 0.2s; }
+  .lib-row:last-child { border-bottom: none; }
+  .lib-row:hover { background: var(--surface-2); }
+  .lib-row.active { background: var(--accent-soft); }
+  .lib-row .lr-title { font-size: 13.5px; font-weight: 700; }
+  .lib-row .lr-meta { font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); display: flex; gap: 8px; }
+  .lib-row .lr-cat { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-soft); }
+  .lib-preview { border: 1px solid var(--border); border-radius: 7px; background: var(--surface); padding: 18px 20px; display: flex; flex-direction: column; gap: 13px; }
+  .lib-preview-head .lp-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .lib-preview-head .lp-meta { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  .lib-pdf { border: 1px solid var(--border-soft); border-radius: 6px; background: var(--paper); padding: 16px; display: flex; flex-direction: column; gap: 8px; min-height: 140px; }
+  .lib-pdf .lp-excerpt { margin: 0 0 3px; font-size: 12.5px; line-height: 1.65; color: var(--ink-soft); }
+  .lib-pdf .lp-bar { height: 7px; border-radius: 2px; background: var(--border); }
+  .lib-pdf .lp-bar.h { height: 11px; width: 55%; background: var(--border-soft); margin-bottom: 3px; }
+  .lib-pdf .lp-bar.short { width: 70%; }
+  .lib-pdf .lp-page { margin-top: auto; text-align: right; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); }
+  .lib-preview-actions { display: flex; gap: 14px; font-size: 12px; }
+  .lib-preview-actions span { color: var(--accent-strong); font-weight: 600; cursor: pointer; }
+
+  @media print {
+    .deck-header, .slide-nav { display: none; }
+    body { background: #fff; display: block; }
+    .stage { padding: 0; max-width: none; display: block; }
+    .slide { display: flex !important; box-shadow: none; border: none; border-radius: 0; page-break-after: always; min-height: 100vh; max-height: none; overflow: visible; width: 100%; }
+    .slide::before { border-radius: 0; }
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="pico-person" viewBox="0 0 24 32">
+    <circle cx="12" cy="7" r="6"></circle>
+    <path d="M2 31c0-9.4 4.2-15.5 10-15.5S22 21.6 22 31z"></path>
+  </symbol>
+</svg>
+
+<div class="deck-header">
+  <div class="deck-header__title"><b>PNS Portal</b><span>·</span><span>AI 시대의 보안팀 — 속도에 맞서는 방법</span></div>
+  <div class="deck-header__right">
+    <span class="deck-progress" id="progress">01 / 18</span>
+    <button class="print-btn" onclick="window.print()" type="button">인쇄 / PDF 저장</button>
+  </div>
+</div>
+
+<div class="stage" id="stage">
+
+  <!-- 01 cover -->
+  <section class="slide cover active">
+    <div class="blob blob-1" aria-hidden="true"></div>
+    <div class="blob blob-2" aria-hidden="true"></div>
+    <div class="blob blob-3" aria-hidden="true"></div>
+    <div class="blob blob-4" aria-hidden="true"></div>
+    <div class="cover-content">
+      <div class="kicker">PNS Portal · Internal Briefing</div>
+      <h1>AI 시대의 보안팀<br />— 속도에 맞서는 방법</h1>
+      <p class="lede">PNS Portal 소개 및 향후 운영 방향</p>
+      <div class="meta">
+        <span><b>발표</b> 정보보안팀 개인정보보호파트</span>
+        <span><b>일시</b> 2026년 8월 14일(금)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 목차 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">INDEX</span><span class="sep">/</span><span class="crumb">목차</span></div>
+      <span class="slide-idx">02 / 18</span>
+    </div>
+    <h2 class="headline">목차</h2>
+    <div class="body">
+      <div class="toc-list">
+        <div class="toc-row"><span class="toc-act">ACT 01</span><span class="toc-label">문제 제기<span class="toc-en">WHY</span></span><span class="toc-leader"></span><span class="toc-page">03</span></div>
+        <div class="toc-row"><span class="toc-act">ACT 02</span><span class="toc-label">대응 전략<span class="toc-en">APPROACH</span></span><span class="toc-leader"></span><span class="toc-page">04</span></div>
+        <div class="toc-row"><span class="toc-act">ACT 03</span><span class="toc-label">기능 소개<span class="toc-en">FEATURES</span></span><span class="toc-leader"></span><span class="toc-page">05–11</span></div>
+        <div class="toc-sub-group">
+          <div class="toc-row sub"><span class="toc-label">사용자 접속 홈</span><span class="toc-leader"></span><span class="toc-page">05</span></div>
+          <div class="toc-row sub"><span class="toc-label">보안 챗봇</span><span class="toc-leader"></span><span class="toc-page">06</span></div>
+          <div class="toc-row sub"><span class="toc-label">VPN 신청</span><span class="toc-leader"></span><span class="toc-page">07</span></div>
+          <div class="toc-row sub"><span class="toc-label">WAF 정책 신청</span><span class="toc-leader"></span><span class="toc-page">08</span></div>
+          <div class="toc-row sub"><span class="toc-label">방화벽 정책 신청</span><span class="toc-leader"></span><span class="toc-page">09</span></div>
+          <div class="toc-row sub"><span class="toc-label">악성메일 검사</span><span class="toc-leader"></span><span class="toc-page">10</span></div>
+          <div class="toc-row sub"><span class="toc-label">법령·정책·가이드라인 자료실</span><span class="toc-leader"></span><span class="toc-page">11</span></div>
+        </div>
+        <div class="toc-row"><span class="toc-act">ACT 04</span><span class="toc-label">활용 방안<span class="toc-en">HOW TO USE</span></span><span class="toc-leader"></span><span class="toc-page">12</span></div>
+        <div class="toc-row"><span class="toc-act">ACT 05</span><span class="toc-label">설계 원칙<span class="toc-en">PRINCIPLE</span></span><span class="toc-leader"></span><span class="toc-page">13</span></div>
+        <div class="toc-row"><span class="toc-act">ACT 06</span><span class="toc-label">숫자로 보는 성과<span class="toc-en">RESULT</span></span><span class="toc-leader"></span><span class="toc-page">14–15</span></div>
+        <div class="toc-row sub"><span class="toc-label">절감 효과 — 비용·시간</span><span class="toc-leader"></span><span class="toc-page">15</span></div>
+        <div class="toc-row"><span class="toc-act">ACT 07</span><span class="toc-label">앞으로의 방향<span class="toc-en">NEXT</span></span><span class="toc-leader"></span><span class="toc-page">16</span></div>
+        <div class="toc-row"><span class="toc-act">ACT 08</span><span class="toc-label">전수조사 공지<span class="toc-en">NOTICE</span></span><span class="toc-leader"></span><span class="toc-page">17</span></div>
+        <div class="toc-row"><span class="toc-act">CLOSE</span><span class="toc-label">Q&amp;A</span><span class="toc-leader"></span><span class="toc-page">18</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 문제 제기 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 01</span><span class="sep">/</span><span class="crumb">WHY — 문제 제기</span></div>
+      <span class="slide-idx">03 / 18</span>
+    </div>
+    <h2 class="headline">AI가 늘리는 속도, 우리는 못 따라간다</h2>
+    <div class="body two-col">
+      <ul class="bullets">
+        <li>전사적으로 AI 도구·AI 기반 서비스 도입이 빠르게 늘고 있음 — 신규 서비스, 사내 자동화 도구, 외부 연동이 이전과 비교할 수 없는 속도로 생겨나는 중</li>
+        <li>이 모든 것이 <b>개인정보 처리 여부·보안 리스크 검토 대상</b>이 될 수 있음</li>
+        <li>모든 신규 서비스를 사람이 수작업으로 하나하나 심사하는 지금 방식은 구조적으로 지속 불가능한 지점에 도달함</li>
+      </ul>
+      <div class="highlight-box people-box" id="peopleBox">
+        <div class="people-top">
+          <span class="k" style="margin-bottom:0;">정보보안팀 인원 비중</span>
+          <button class="people-reveal-btn" id="peopleRevealBtn" type="button">클릭해서 확인 →</button>
+        </div>
+        <div class="people-grid-wrap">
+          <div class="people-headline" id="peopleHeadline"><span class="big">1.7%</span><span class="of">= 전체 구성원 180명 중 3명</span></div>
+          <div class="people-grid" id="peopleGrid" role="img" aria-label="전체 구성원 180명 중 정보보안팀 3명(약 1.7%)을 색으로 표시한 인포그래픽"></div>
+        </div>
+        <div class="people-legend">
+          <span class="lg"><span class="sw on"></span>정보보안팀 (3명)</span>
+          <span class="lg"><span class="sw off"></span>그 외 전체 구성원 (177명)</span>
+        </div>
+      </div>
+    </div>
+    <!-- 발표자 노트: "우리가 막을 수 없는 흐름이라면, 같은 도구(AI)로 대응 속도를 맞추자는 게 이 프로젝트의 출발점이었습니다." -->
+  </section>
+
+  <!-- 04 대응 전략 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 02</span><span class="sep">/</span><span class="crumb">APPROACH — 대응 전략</span></div>
+      <span class="slide-idx">04 / 18</span>
+    </div>
+    <h2 class="headline">AI로 늘어난 부담을, AI로 해결한다</h2>
+    <p class="subhead">보안팀이 직접 AI를 활용해 셀프서비스형 보안포털(PNS Portal)을 구축했습니다. 반복 업무는 자동화하고, 보안팀은 판단이 꼭 필요한 지점에만 집중합니다.</p>
+    <div class="body">
+      <div class="module-grid">
+        <div class="module-card">
+          <span class="module-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16a1 1 0 011 1V15a1 1 0 01-1 1H9l-4 3.5V16H4a1 1 0 01-1-1V6.5a1 1 0 011-1z"/><circle cx="9" cy="10.5" r="0.6" fill="#fff" stroke="none"/><circle cx="12" cy="10.5" r="0.6" fill="#fff" stroke="none"/><circle cx="15" cy="10.5" r="0.6" fill="#fff" stroke="none"/></svg></span>
+          <span class="name">보안 챗봇</span><span class="desc">정책·법령 실시간 질의응답</span><span class="tag">chatbot</span>
+        </div>
+        <div class="module-card">
+          <span class="module-icon mint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l7 2.6v5.4c0 4.6-3 7.6-7 8.9-4-1.3-7-4.3-7-8.9V6.1l7-2.6z"/><path d="M9 12l2 2 4-4.2"/></svg></span>
+          <span class="name">VPN 신청</span><span class="desc">MAC 등록 자동 처리</span><span class="tag">vpn</span>
+        </div>
+        <div class="module-card">
+          <span class="module-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M4 12h16"/><path d="M12 4c3 2.2 3 13.8 0 16"/><path d="M12 4c-3 2.2-3 13.8 0 16"/></svg></span>
+          <span class="name">WAF 정책 신청</span><span class="desc">WebACL Rule 예외 신청</span><span class="tag">waf</span>
+        </div>
+        <div class="module-card">
+          <span class="module-icon mint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.3" y="4.8" width="7" height="4.2" rx="0.6"/><rect x="13.7" y="4.8" width="7" height="4.2" rx="0.6"/><rect x="7.5" y="9.8" width="7" height="4.2" rx="0.6"/><rect x="3.3" y="14.8" width="7" height="4.2" rx="0.6"/><rect x="13.7" y="14.8" width="7" height="4.2" rx="0.6"/></svg></span>
+          <span class="name">방화벽 정책 신청</span><span class="desc">방화벽 정책 예외 신청</span><span class="tag">firewall</span>
+        </div>
+        <div class="module-card">
+          <span class="module-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1.2"/><path d="M3 7l9 6.5L21 7"/><path d="M19 4.2v2.4"/><circle cx="19" cy="8" r="0.4" fill="#fff" stroke="none"/></svg></span>
+          <span class="name">악성메일 검사</span><span class="desc">AI 자동 판정</span><span class="tag">emlscan</span>
+        </div>
+        <div class="module-card">
+          <span class="module-icon mint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2-1 5-1 8 0v13c-3-1-6-1-8 0V5.5z"/><path d="M20 5.5c-2-1-5-1-8 0v13c3-1 6-1 8 0V5.5z"/></svg></span>
+          <span class="name">법령·가이드라인 자료실</span><span class="desc">원문 검색·열람</span><span class="tag">library</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 사용자 접속 홈 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 03</span><span class="sep">/</span><span class="crumb">사용자 접속 홈</span></div>
+      <span class="slide-idx">05 / 18</span>
+    </div>
+    <h2 class="headline">사용자 접속 홈</h2>
+    <p class="subhead">포탈에 로그인하면 가장 먼저 만나는 화면입니다. 내 신청 현황을 바로 확인하고, 필요한 메뉴로 곧장 이동합니다.</p>
+    <div class="body two-col">
+      <ul class="bullets">
+        <li>접수대기 / 승인 / 완료 / 실패 — 내 신청 현황을 상태 카드로 한눈에 표시</li>
+        <li>VPN·WAF·방화벽·악성메일 신청 이력(담당자·Jira 티켓)을 바로 확인 — 관리자는 전체 신청 큐 확인</li>
+        <li>좌측 사이드바에 신청 메뉴가 상시 노출되어 클릭 한 번으로 이동</li>
+        <li>정보보안 공지사항을 Slack과 함께 이 화면에도 게시할 예정 (추가 예정)</li>
+      </ul>
+      <div class="screen-mock">
+        <div class="screen-mock-top"><span class="sm-title">사용자 접속 홈</span><span class="sm-btn">+ 신청하기</span></div>
+        <div class="sm-stats">
+          <div class="sm-stat"><div class="n">2</div><div class="l">접수 대기</div></div>
+          <div class="sm-stat"><div class="n">1</div><div class="l">승인</div></div>
+          <div class="sm-stat"><div class="n">6</div><div class="l">완료</div></div>
+          <div class="sm-stat"><div class="n">0</div><div class="l">실패</div></div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="sm-table">
+            <thead><tr><th>유형</th><th>요약</th><th>신청자</th><th>상태</th></tr></thead>
+            <tbody>
+              <tr><td class="sm-type">VPN</td><td class="sm-summary">SR-L0248 MAC 등록</td><td>hong.gd</td><td><span class="sm-badge done">완료</span></td></tr>
+              <tr><td class="sm-type">WAF</td><td class="sm-summary">결제 API 엔드포인트 허용</td><td>dev.kim</td><td><span class="sm-badge">접수</span></td></tr>
+              <tr><td class="sm-type">방화벽</td><td class="sm-summary">AWS PRD-KR 정책 등록</td><td>dev.kim</td><td><span class="sm-badge ok">승인</span></td></tr>
+              <tr><td class="sm-type">악성메일</td><td class="sm-summary">invoice_확인요청.eml</td><td>sales.lee</td><td><span class="sm-badge done">완료</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 보안 챗봇 (DEMO) -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 03</span><span class="sep">/</span><span class="crumb"><b>신청</b> <span class="arrow">▸</span> 보안 챗봇</span></div>
+      <span class="slide-idx">06 / 18</span>
+    </div>
+    <h2 class="headline">보안 챗봇</h2>
+    <p class="subhead">사내 법령·가이드라인 위키를 근거로 보안 질문에 답합니다. 아래에서 실제 흐름을 눌러보세요.</p>
+    <div class="body">
+      <div class="demo" data-max-step="4" id="demo-chat">
+        <div class="demo-toolbar">
+          <div class="demo-steps"><span class="demo-step-dot" data-n="1"></span><span class="demo-step-dot" data-n="2"></span><span class="demo-step-dot" data-n="3"></span><span class="demo-step-dot" data-n="4"></span></div>
+          <div class="demo-caption">
+            <span data-cap="1">STEP 1 · 질문 입력창이 열립니다</span>
+            <span data-cap="2">STEP 2 · 샘플 질문이 자동 입력됩니다</span>
+            <span data-cap="3">STEP 3 · 제출하면 챗봇에게 전달됩니다</span>
+            <span data-cap="4">STEP 4 · AI가 답변과 참고자료를 함께 제공합니다</span>
+          </div>
+          <div class="demo-actions"><button class="demo-btn ghost" data-reset type="button">처음부터</button><button class="demo-btn primary" data-next type="button">다음 단계 →</button></div>
+        </div>
+        <div class="chat-stage">
+          <div class="df wide">
+            <label class="df-label">질문</label>
+            <textarea class="df-textarea" data-field data-empty="" data-sample="협력업체에 개인정보 처리를 위탁할 때 안전조치 의무가 있나요?" placeholder="예: 생체정보를 처리할 때 지켜야 할 안전조치가 뭔가요?" readonly></textarea>
+          </div>
+          <div class="demo-submit-row" style="justify-content:flex-start;"><button class="demo-submit-btn" type="button" disabled>질문하기</button></div>
+          <div class="chat-loading">챗봇이 위키 문서를 검색하며 답변을 작성하는 중…</div>
+          <div class="chat-answer">
+            <div class="qk">AI 답변</div>
+            <p>네, 개인정보 보호법 제26조에 따라 위탁자는 수탁자가 개인정보를 안전하게 처리하는지 관리·감독할 의무가 있습니다. 위탁 계약서에는 안전조치 의무, 재위탁 제한, 손해배상 책임 등을 명시해야 하며, 수탁자의 처리 현황을 정기적으로 점검해야 합니다.</p>
+            <div class="chat-refs"><span class="chip">참고자료 · 개인정보 보호법 제26조</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 VPN 신청 (DEMO) -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 03</span><span class="sep">/</span><span class="crumb"><b>신청</b> <span class="arrow">▸</span> VPN 신청</span></div>
+      <span class="slide-idx">07 / 18</span>
+    </div>
+    <h2 class="headline">VPN 신청</h2>
+    <p class="subhead">FortiGate VPN 접근(MAC 등록)을 신청합니다.</p>
+    <div class="body">
+      <div class="demo" data-max-step="4" id="demo-vpn">
+        <div class="demo-toolbar">
+          <div class="demo-steps"><span class="demo-step-dot" data-n="1"></span><span class="demo-step-dot" data-n="2"></span><span class="demo-step-dot" data-n="3"></span><span class="demo-step-dot" data-n="4"></span></div>
+          <div class="demo-caption">
+            <span data-cap="1">STEP 1 · 신청서가 열립니다</span>
+            <span data-cap="2">STEP 2 · 필수 정보가 샘플 데이터로 채워집니다</span>
+            <span data-cap="3">STEP 3 · 제출하면 정보보안팀에게 전달됩니다</span>
+            <span data-cap="4">STEP 4 · 정보보안팀 확인 후 승인 · FortiGate에 자동 등록됩니다</span>
+          </div>
+          <div class="demo-actions"><button class="demo-btn ghost" data-reset type="button">처음부터</button><button class="demo-btn primary" data-next type="button">다음 단계 →</button></div>
+        </div>
+        <div class="demo-stage two-col">
+          <div class="demo-form">
+            <div class="df wide"><label class="df-label">사유</label><input class="df-input" data-field data-empty="" data-sample="재택근무 노트북 교체로 MAC 재등록 요청" placeholder="예: 기기 교체로 재등록" readonly /></div>
+            <div class="df"><label class="df-label">자산번호</label><input class="df-input" data-field data-empty="" data-sample="SR-L0248" placeholder="예: SR-L0000" readonly /></div>
+            <div class="df"><label class="df-label">MAC 주소</label><input class="df-input" data-field data-empty="" data-sample="3c:22:fb:9a:14:02" placeholder="예: aa:bb:cc:11:22:33" readonly /></div>
+            <div class="df wide">
+              <label class="df-label">기간</label>
+              <div class="df-radio-row" data-field-radio data-sample="1개월">
+                <span class="df-radio-opt" data-value="1주일">1주일</span><span class="df-radio-opt" data-value="1개월">1개월</span><span class="df-radio-opt" data-value="2개월">2개월</span><span class="df-radio-opt" data-value="3개월">3개월</span>
+              </div>
+            </div>
+            <div class="demo-submit-row"><button class="demo-submit-btn" type="button" disabled>VPN 신청</button></div>
+          </div>
+          <div class="demo-queue">
+            <div class="qk">정보보안팀 · 신청 내역</div>
+            <div class="qsummary">[VPN] SR-L0248 MAC 등록 (3c:22:fb:9a:14:02)</div>
+            <div class="qmeta">신청자 hong.gd@spoonlabs.com</div>
+            <span class="status-badge pending">접수</span>
+            <span class="status-badge approved">승인</span>
+            <div class="approve-line">처리자 pns.admin@spoonlabs.com · FortiGate VPN 포탈에 자동 등록 완료</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 WAF 정책 신청 (DEMO) -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 03</span><span class="sep">/</span><span class="crumb"><b>신청</b> <span class="arrow">▸</span> WAF 정책 신청</span></div>
+      <span class="slide-idx">08 / 18</span>
+    </div>
+    <h2 class="headline">WAF 정책 신청</h2>
+    <p class="subhead">WebACL Rule 추가/변경을 신청합니다.</p>
+    <div class="body">
+      <div class="demo" data-max-step="4" id="demo-waf">
+        <div class="demo-toolbar">
+          <div class="demo-steps"><span class="demo-step-dot" data-n="1"></span><span class="demo-step-dot" data-n="2"></span><span class="demo-step-dot" data-n="3"></span><span class="demo-step-dot" data-n="4"></span></div>
+          <div class="demo-caption">
+            <span data-cap="1">STEP 1 · 신청서가 열립니다</span>
+            <span data-cap="2">STEP 2 · 필수 정보가 샘플 데이터로 채워집니다</span>
+            <span data-cap="3">STEP 3 · 제출하면 정보보안팀에게 전달됩니다</span>
+            <span data-cap="4">STEP 4 · 정보보안팀 확인 후 승인됩니다</span>
+          </div>
+          <div class="demo-actions"><button class="demo-btn ghost" data-reset type="button">처음부터</button><button class="demo-btn primary" data-next type="button">다음 단계 →</button></div>
+        </div>
+        <div class="demo-stage two-col">
+          <div class="demo-form">
+            <div class="df wide"><label class="df-label">요청 내용</label><input class="df-input" data-field data-empty="" data-sample="결제 API 신규 엔드포인트 허용 요청" placeholder="예: tier-manager 접근용 WebACL Rule 추가 요청" readonly /></div>
+            <div class="df wide"><label class="df-label">요청 사유</label><textarea class="df-textarea" data-field data-empty="" data-sample="신규 결제 연동 서비스(payment-gateway) 호출 허용이 필요합니다" placeholder="예: 신규 어플리케이션 호출 허용 작업 요청" readonly></textarea></div>
+            <div class="df wide">
+              <label class="df-label">정책</label>
+              <div class="df-radio-row" data-field-radio data-sample="허용"><span class="df-radio-opt" data-value="허용">허용</span><span class="df-radio-opt" data-value="차단">차단</span></div>
+            </div>
+            <div class="df"><label class="df-label">적용 국가</label><input class="df-input" data-field data-empty="" data-sample="KR, JP" placeholder="예: KR, JP, TW" readonly /></div>
+            <div class="df"><label class="df-label">대상 Rule</label><input class="df-input" data-field data-empty="" data-sample="tier-regular-OR-Byte-allow-04" placeholder="예: tier-regular-OR-Byte-allow-01" readonly /></div>
+            <div class="df wide"><label class="df-label">Values</label><textarea class="df-textarea" data-field data-empty="" data-sample="/payments/v2" placeholder="예: /tiers (한 줄에 하나)" readonly></textarea></div>
+            <div class="demo-submit-row"><button class="demo-submit-btn" type="button" disabled>WAF 정책 신청</button></div>
+          </div>
+          <div class="demo-queue">
+            <div class="qk">정보보안팀 · 신청 내역</div>
+            <div class="qsummary">[WAF] tier-regular-OR-Byte-allow-04 허용 — 결제 API 신규 엔드포인트 허용 요청</div>
+            <div class="qmeta">신청자 dev.kim@spoonlabs.com</div>
+            <span class="status-badge pending">접수</span>
+            <span class="status-badge approved">승인</span>
+            <div class="approve-line">처리자 pns.admin@spoonlabs.com · WebACL Rule 반영 완료</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 방화벽 정책 신청 (DEMO) -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 03</span><span class="sep">/</span><span class="crumb"><b>신청</b> <span class="arrow">▸</span> 방화벽 정책 신청</span></div>
+      <span class="slide-idx">09 / 18</span>
+    </div>
+    <h2 class="headline">방화벽 정책 신청</h2>
+    <p class="subhead">사무실 방화벽/AWS 정책 등록을 신청합니다.</p>
+    <div class="body">
+      <div class="demo" data-max-step="4" id="demo-firewall">
+        <div class="demo-toolbar">
+          <div class="demo-steps"><span class="demo-step-dot" data-n="1"></span><span class="demo-step-dot" data-n="2"></span><span class="demo-step-dot" data-n="3"></span><span class="demo-step-dot" data-n="4"></span></div>
+          <div class="demo-caption">
+            <span data-cap="1">STEP 1 · 신청서가 열립니다</span>
+            <span data-cap="2">STEP 2 · 필수 정보가 샘플 데이터로 채워집니다</span>
+            <span data-cap="3">STEP 3 · 제출하면 정보보안팀에게 전달됩니다</span>
+            <span data-cap="4">STEP 4 · 정보보안팀 확인 후 승인됩니다</span>
+          </div>
+          <div class="demo-actions"><button class="demo-btn ghost" data-reset type="button">처음부터</button><button class="demo-btn primary" data-next type="button">다음 단계 →</button></div>
+        </div>
+        <div class="demo-stage two-col">
+          <div class="demo-form">
+            <div class="df wide"><label class="df-label">정책 등록대상</label><input class="df-input" data-field data-empty="" data-sample="AWS PRD-KR" placeholder="예: 사무실 방화벽 / AWS PRD-KR" readonly /></div>
+            <div class="df"><label class="df-label">출발지 IP 또는 대상</label><input class="df-input" data-field data-empty="" data-sample="10.20.4.15/32" placeholder="IP 또는 서버명" readonly /></div>
+            <div class="df"><label class="df-label">목적지 IP 또는 대상</label><input class="df-input" data-field data-empty="" data-sample="payment-gw.internal" placeholder="IP 또는 서버명" readonly /></div>
+            <div class="df"><label class="df-label">적용 통신유형</label><input class="df-input" data-field data-empty="" data-sample="TCP / 8443" placeholder="예: TCP / 9000" readonly /></div>
+            <div class="df"><label class="df-label">완료 희망일</label><input class="df-input" data-field data-empty="" data-sample="2026-08-22" placeholder="YYYY-MM-DD" readonly /></div>
+            <div class="df wide"><label class="df-label">유지 기간</label><input class="df-input" data-field data-empty="" data-sample="상시(지속 유지)" placeholder="상시 또는 종료일" readonly /></div>
+            <div class="demo-submit-row"><button class="demo-submit-btn" type="button" disabled>방화벽 정책 신청</button></div>
+          </div>
+          <div class="demo-queue">
+            <div class="qk">정보보안팀 · 신청 내역</div>
+            <div class="qsummary">[방화벽] AWS PRD-KR — 10.20.4.15/32 → payment-gw.internal (TCP / 8443)</div>
+            <div class="qmeta">신청자 dev.kim@spoonlabs.com</div>
+            <span class="status-badge pending">접수</span>
+            <span class="status-badge approved">승인</span>
+            <div class="approve-line">처리자 pns.admin@spoonlabs.com · 방화벽 정책 반영 완료</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 악성메일 검사 (DEMO) -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 03</span><span class="sep">/</span><span class="crumb"><b>신청</b> <span class="arrow">▸</span> 악성메일 검사</span></div>
+      <span class="slide-idx">10 / 18</span>
+    </div>
+    <h2 class="headline">악성메일 검사</h2>
+    <p class="subhead">의심 메일(.eml)을 업로드하면 AI가 분석합니다. 결과는 Slack과 신청 내역으로.</p>
+    <div class="body">
+      <div class="demo" data-max-step="4" id="demo-eml">
+        <div class="demo-toolbar">
+          <div class="demo-steps"><span class="demo-step-dot" data-n="1"></span><span class="demo-step-dot" data-n="2"></span><span class="demo-step-dot" data-n="3"></span><span class="demo-step-dot" data-n="4"></span></div>
+          <div class="demo-caption">
+            <span data-cap="1">STEP 1 · 신청서가 열립니다</span>
+            <span data-cap="2">STEP 2 · 검사할 파일이 첨부됩니다</span>
+            <span data-cap="3">STEP 3 · 제출하면 정보보안팀에게 전달되어 AI가 분석합니다</span>
+            <span data-cap="4">STEP 4 · 정보보안팀 확인 완료 · AI 판정 결과가 표시됩니다</span>
+          </div>
+          <div class="demo-actions"><button class="demo-btn ghost" data-reset type="button">처음부터</button><button class="demo-btn primary" data-next type="button">다음 단계 →</button></div>
+        </div>
+        <div class="demo-stage two-col">
+          <div class="demo-form">
+            <div class="df wide">
+              <label class="df-label">.eml 파일</label>
+              <div class="df-file" data-field data-empty="파일을 선택하거나 이 영역으로 드래그하세요 (.eml, 최대 5MB)" data-sample="invoice_확인요청.eml · 182.4 KB 선택됨">파일을 선택하거나 이 영역으로 드래그하세요 (.eml, 최대 5MB)</div>
+            </div>
+            <div class="df wide"><label class="df-label">참고사항 (선택)</label><textarea class="df-textarea" data-field data-empty="" data-sample="발신자를 사칭한 것 같습니다" placeholder="예: 발신자를 사칭한 것 같습니다" readonly></textarea></div>
+            <div class="demo-submit-row"><button class="demo-submit-btn" type="button" disabled>분석 요청</button></div>
+          </div>
+          <div class="demo-queue">
+            <div class="qk">정보보안팀 · 신청 내역</div>
+            <div class="qsummary">[악성메일] invoice_확인요청.eml (사전 위험도: 의심)</div>
+            <div class="qmeta">신청자 sales.lee@spoonlabs.com</div>
+            <span class="status-badge pending">접수</span>
+            <span class="status-badge approved">승인</span>
+            <div class="approve-line">정보보안팀 확인 완료 · AI 판정: 의심 메일 — 발신자 도메인 위장 정황</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 자료실 (검색 + PDF 뷰어 데모) -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 03</span><span class="sep">/</span><span class="crumb"><b>자료실</b> <span class="arrow">▸</span> 법령·정책·가이드라인</span></div>
+      <span class="slide-idx">11 / 18</span>
+    </div>
+    <h2 class="headline">법령·정책·가이드라인 자료실</h2>
+    <p class="subhead">위키에 등록된 법령·사내정책·가이드라인 원문 PDF를 검색하고 열람합니다. 문서를 클릭해 보세요.</p>
+    <div class="body">
+      <div class="lib-demo">
+        <input class="lib-search" id="libSearch" type="text" placeholder="제목, 발급기관, 카테고리로 검색" />
+        <div class="lib-body">
+          <div class="lib-list" id="libList">
+            <div class="lib-row active" data-title="개인정보 보호법" data-issuer="개인정보보호위원회" data-date="2025-04" data-cat="법령" data-pages="51" data-excerpt="제1조(목적) 이 법은 개인정보의 처리 및 보호에 관한 사항을 정함으로써 개인의 자유와 권리를 보호하고, 나아가 개인의 존엄과 가치를 구현함을 목적으로 한다.">
+              <span class="lr-title">개인정보 보호법</span>
+              <span class="lr-meta"><span>개인정보보호위원회</span><span class="lr-cat">법령</span></span>
+            </div>
+            <div class="lib-row" data-title="개인정보 보호법 시행령" data-issuer="개인정보보호위원회" data-date="2026-05" data-cat="법령" data-pages="65" data-excerpt="제1조(목적) 이 영은 「개인정보 보호법」에서 위임된 사항과 그 시행에 필요한 사항을 규정함을 목적으로 한다.">
+              <span class="lr-title">개인정보 보호법 시행령</span>
+              <span class="lr-meta"><span>개인정보보호위원회</span><span class="lr-cat">법령</span></span>
+            </div>
+            <div class="lib-row" data-title="개인정보의 안전성 확보조치 기준 안내서" data-issuer="개인정보보호위원회" data-date="2024-10" data-cat="가이드라인" data-pages="210" data-excerpt="접근권한 관리, 접근통제, 암호화, 접속기록 보관 등 개인정보처리자가 갖춰야 할 안전조치 기준을 문답형 체크리스트로 안내합니다.">
+              <span class="lr-title">개인정보의 안전성 확보조치 기준 안내서</span>
+              <span class="lr-meta"><span>개인정보보호위원회</span><span class="lr-cat">가이드라인</span></span>
+            </div>
+            <div class="lib-row" data-title="자동화된 결정에 대한 정보주체의 권리 안내서" data-issuer="개인정보보호위원회" data-date="2024-09" data-cat="가이드라인" data-pages="68" data-excerpt="완전히 자동화된 결정에 대해 정보주체가 설명을 요구하거나 거부할 수 있는 권리와, 개인정보처리자의 준수 절차를 안내합니다.">
+              <span class="lr-title">자동화된 결정에 대한 정보주체의 권리 안내서</span>
+              <span class="lr-meta"><span>개인정보보호위원회</span><span class="lr-cat">가이드라인</span></span>
+            </div>
+          </div>
+          <div class="lib-preview">
+            <div class="lib-preview-head">
+              <div class="lp-title" id="lpTitle">개인정보 보호법</div>
+              <div class="lp-meta" id="lpMeta">개인정보보호위원회 · 발간 2025-04 · 법령</div>
+            </div>
+            <div class="lib-pdf">
+              <div class="lp-bar h"></div>
+              <p class="lp-excerpt" id="lpExcerpt">제1조(목적) 이 법은 개인정보의 처리 및 보호에 관한 사항을 정함으로써 개인의 자유와 권리를 보호하고, 나아가 개인의 존엄과 가치를 구현함을 목적으로 한다.</p>
+              <div class="lp-bar" style="width:80%"></div>
+              <div class="lp-bar short"></div>
+              <div class="lp-page" id="lpPage">1 / 51</div>
+            </div>
+            <div class="lib-preview-actions"><span>새 탭에서 열기</span><span>다운로드</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 활용 방안 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 04</span><span class="sep">/</span><span class="crumb">HOW TO USE — 활용 방안</span></div>
+      <span class="slide-idx">12 / 18</span>
+    </div>
+    <h2 class="headline">신청은 포탈로, 문의는 Slack으로</h2>
+    <div class="body two-col" style="align-items: stretch;">
+      <div class="highlight-box fill"><div class="k">PNS Portal로 신청</div><div class="v">VPN 신청<br />WAF 정책 신청<br />방화벽 정책 신청</div></div>
+      <div class="highlight-box fill"><div class="k">Slack #help-pns 로 문의</div><div class="v">PRD 환경에 업로드/오픈할 서비스의 보안성 검토<br />개인정보 관련 문의<br />기타 솔루션 에러</div></div>
+    </div>
+  </section>
+
+  <!-- 13 설계 원칙 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 05</span><span class="sep">/</span><span class="crumb">PRINCIPLE — 설계 원칙</span></div>
+      <span class="slide-idx">13 / 18</span>
+    </div>
+    <h2 class="headline">"AI는 초안까지, 최종 판단은 반드시 사람"</h2>
+    <p class="subhead">AI 활용에 대한 막연한 불안(오판·과신)을 정면으로 다루는 슬라이드입니다.</p>
+    <div class="body">
+      <div class="compare">
+        <div class="col on">
+          <h4>AI가 자동화하는 것</h4>
+          <ul><li>VPN MAC 주소 등록 / 해제</li><li>악성 메일 1차 스캔 및 사전 판정</li><li>신청 접수 시 Jira 티켓 자동 생성</li></ul>
+        </div>
+        <div class="col">
+          <h4>사람이 최종 결정하는 것</h4>
+          <ul><li>악성 메일 최종 판정 확인</li><li>WAF · 방화벽 정책 예외 승인</li><li>VPN 자산번호-MAC 불일치 시 예외 확인</li></ul>
+        </div>
+      </div>
+    </div>
+    <!-- 발표자 노트: "AI를 쓴다는 게 '보안팀이 판단을 AI에게 넘긴다'는 뜻이 아닙니다. 반복적이고 정형화된 부분만 AI가 걸러주고, 판단은 여전히 사람이 합니다." -->
+  </section>
+
+  <!-- 14 숫자로 보는 성과 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 06</span><span class="sep">/</span><span class="crumb">RESULT — 향후 운영 시 얻을 수 있는 것</span></div>
+      <span class="slide-idx">14 / 18</span>
+    </div>
+    <h2 class="headline">숫자로 보는 PNS Portal</h2>
+    <div class="body">
+      <div class="stat-row">
+        <div class="stat"><span class="num">24</span><span class="lbl">법령 원문 (건)</span></div>
+        <div class="stat"><span class="num">28</span><span class="lbl">유관 부처 가이드라인 (건)</span></div>
+        <div class="stat"><span class="num">98</span><span class="lbl">내부 보안 가이드라인 · 업무 가이드 (건)</span></div>
+      </div>
+      <ul class="bullets" style="margin-top:6px;">
+        <li>총 150건의 문서를 바탕으로 챗봇을 통한 빠른 초안 검토 가능</li>
+        <li>신청서 처리 이력이 Jira에 자동 기록되어 감사 추적 가능</li>
+        <li>반복 답변 · 수작업 처리 감소에 따른 보안 운영 리소스 재배치 — 최신 CVE 및 긴급 취약점 대응력 향상</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 15 절감 효과 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 06</span><span class="sep">/</span><span class="crumb">RESULT — 절감 효과</span></div>
+      <span class="slide-idx">15 / 18</span>
+    </div>
+    <h2 class="headline">숫자로 보는 절감 효과</h2>
+    <p class="subhead">반복 업무를 자동화하면서 처리 시간과 비용이 실제로 줄었습니다.</p>
+    <div class="body">
+      <div class="stat-row">
+        <div class="stat"><span class="num" style="font-size:clamp(24px,3.2vw,34px);">10~15분 → 1분</span><span class="lbl">VPN 신청 처리 시간 (건당)</span></div>
+        <div class="stat"><span class="num">약 92%</span><span class="lbl">건당 처리 시간 감소율</span></div>
+        <div class="stat"><span class="num">월 30건</span><span class="lbl">VPN 신청 처리량</span></div>
+      </div>
+      <div class="highlight-box fill" style="padding:22px 26px;">
+        <div class="k">비용 절감</div>
+        <div class="v" style="font-size:16px;">기존 셀리즈 솔루션을 PNS Portal로 대체 — 연간 <b style="color:var(--accent-strong);">[절감액 입력]</b> 절감</div>
+      </div>
+      <div>
+        <p class="point" style="margin-bottom:10px;">확보한 시간으로, 보안팀은 본연의 업무에 더 집중합니다</p>
+        <div class="chip-grid">
+          <span class="chip">취약점 분석</span><span class="chip">이상징후 탐지</span><span class="chip">로그 분석</span><span class="chip">최신 취약점 대응</span><span class="chip">규제 대응</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 앞으로의 방향 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 07</span><span class="sep">/</span><span class="crumb">NEXT — 앞으로의 방향</span></div>
+      <span class="slide-idx">16 / 18</span>
+    </div>
+    <h2 class="headline">"AI 사전 선별 + 사람 최종판단" 확장</h2>
+    <div class="body">
+      <ul class="bullets">
+        <li><b>전사에 요청드리는 것</b> — VPN·WAF·방화벽 등 보안 관련 변경은 반드시 PNS Portal로 신청해 주세요. 정식 절차를 거치지 않은 변경은 추적·감사가 어렵습니다.</li>
+        <li>초기 안정화 과정을 거친 뒤 구성원 피드백을 반영해 기능을 지속 추가</li>
+        <li>보안팀은 계속 이런 방식으로 규모 대비 효율을 확보하며 지원하겠습니다</li>
+      </ul>
+      <div>
+        <p class="point" style="margin-bottom:10px;">앞으로 추가될 기능</p>
+        <div class="two-col" style="align-items:stretch;">
+          <div class="highlight-box">
+            <div class="k">준비 중</div>
+            <div class="v" style="font-size:15px; font-weight:600;">보안성 자가점검 체크리스트</div>
+          </div>
+          <div class="highlight-box">
+            <div class="k">준비 중</div>
+            <div class="v" style="font-size:15px; font-weight:600;">입사자 · 퇴사자 보안서약서</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 전수조사 공지 -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">ACT 08</span><span class="sep">/</span><span class="crumb">NOTICE — AI 활용 자체 구축 서비스 현황 전수조사</span></div>
+      <span class="slide-idx">17 / 18</span>
+    </div>
+    <h2 class="headline">보안팀이 모르는 서비스를, 지금 함께 찾습니다</h2>
+    <p class="subhead">AI 활용도가 높아지며 팀 내 자체 구축 서비스의 생성 속도가 빨라지고 있습니다. 보안팀이 인지하지 못한 환경에 배포된 서비스는 접근통제·인증·로그 등 기본 보안 통제가 빠진 채 운영될 위험이 있습니다. 제출 정보는 유출 예방 목적에만 활용됩니다.</p>
+    <div class="body">
+      <dl class="info-grid">
+        <dt>점검 기간</dt><dd>2026년 8월 14일(금) 14:00 ~ 9월 4일(금) · 3주간</dd>
+        <dt>점검 대상</dt><dd>AI 기반으로 개발 중이거나 운영 중인 모든 서비스 / devspoon.net에 업로드된 모든 서비스(스터디 목적 포함)</dd>
+        <dt>점검 목적</dt><dd>내부 자료·개인정보 유출 사전 예방, 안전한 서비스 구축을 위한 환경·구성 가이드 제공</dd>
+        <dt>점검 항목</dt>
+        <dd>
+          <div class="chip-grid">
+            <span class="chip">서비스명</span><span class="chip">구축 목적</span><span class="chip">접속 주소/방법</span>
+            <span class="chip">구축 시 활용 AI</span><span class="chip">현재 활용 AI(API 연동 포함)</span><span class="chip">활용 SaaS</span>
+            <span class="chip">수집 데이터(소스)</span><span class="chip">수집 개인정보</span><span class="chip">담당자·연락처</span>
+            <span class="chip">서비스 상태</span><span class="chip">예상 이용자 규모</span><span class="chip">인증 방식</span>
+          </div>
+        </dd>
+        <dt>결과 활용</dt><dd>중요도 높은 서비스는 devspoon.net → mgtspoon.com 전환 진행 / 운영·구성 환경에 따른 보안 가이드라인 및 조치방안 제공</dd>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 18 Q&A -->
+  <section class="slide">
+    <div class="slide-head-row">
+      <div class="crumb-group"><span class="act-tag">CLOSE</span><span class="sep">/</span><span class="crumb">Q&A</span></div>
+      <span class="slide-idx">18 / 18</span>
+    </div>
+    <h2 class="headline">문의</h2>
+    <div class="body">
+      <dl class="info-grid">
+        <dt>PNS Portal</dt><dd><a href="#">[URL]</a></dd>
+        <dt>전수조사 링크</dt><dd><a href="#">[URL]</a></dd>
+        <dt>문의처</dt><dd>PNS 정보보안팀 개인정보보호파트</dd>
+      </dl>
+    </div>
+  </section>
+
+</div>
+
+<div class="slide-nav">
+  <button class="nav-btn" id="navPrev" type="button">← 이전</button>
+  <span class="nav-count" id="navCount">01 / 17</span>
+  <button class="nav-btn" id="navNext" type="button">다음 →</button>
+</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var total = slides.length;
+    var progress = document.getElementById('progress');
+    var navCount = document.getElementById('navCount');
+    var navPrev = document.getElementById('navPrev');
+    var navNext = document.getElementById('navNext');
+    var current = slides.findIndex(function (s) { return s.classList.contains('active'); });
+    if (current < 0) current = 0;
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function pad(n) { return String(n).length < 2 ? '0' + n : String(n); }
+    function render(direction) {
+      slides.forEach(function (s, i) { s.classList.toggle('active', i === current); });
+      var label = pad(current + 1) + ' / ' + pad(total);
+      if (progress) progress.textContent = label;
+      if (navCount) navCount.textContent = label;
+      if (navPrev) navPrev.disabled = current === 0;
+      if (navNext) navNext.disabled = current === total - 1;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+      if (direction && !reduceMotion) {
+        var activeSlide = slides[current];
+        activeSlide.classList.remove('enter-next', 'enter-prev');
+        void activeSlide.offsetWidth; // force reflow so the animation restarts every time
+        activeSlide.classList.add(direction === 'next' ? 'enter-next' : 'enter-prev');
+      }
+    }
+    function goTo(index, direction) {
+      if (index < 0 || index >= total) return;
+      var dir = direction || (index > current ? 'next' : index < current ? 'prev' : null);
+      current = index;
+      render(dir);
+    }
+    function go(delta) {
+      goTo(current + delta, delta > 0 ? 'next' : 'prev');
+    }
+    if (navPrev) navPrev.addEventListener('click', function () { go(-1); });
+    if (navNext) navNext.addEventListener('click', function () { go(1); });
+    document.addEventListener('keydown', function (e) {
+      if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); go(1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
+      else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+      else if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+    });
+    render();
+  })();
+
+  // ---- people pictogram: 100 icons, click to reveal ~1.7% (3/180) colored + "1.7%" ----
+  (function () {
+    var wrap = document.getElementById('peopleGrid');
+    if (!wrap) return;
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+    var XLINK_NS = 'http://www.w3.org/1999/xlink';
+    var COLORED = 2; // round(3 / 180 * 100) = round(1.67) = 2
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < 100; i++) {
+      var svg = document.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 24 32');
+      svg.setAttribute('class', 'pico');
+      var use = document.createElementNS(SVG_NS, 'use');
+      use.setAttributeNS(XLINK_NS, 'href', '#pico-person');
+      use.setAttribute('href', '#pico-person');
+      svg.appendChild(use);
+      frag.appendChild(svg);
+    }
+    wrap.appendChild(frag);
+
+    var btn = document.getElementById('peopleRevealBtn');
+    var headline = document.getElementById('peopleHeadline');
+    var picos = wrap.querySelectorAll('.pico');
+    var revealed = false;
+    function paint() {
+      for (var i = 0; i < picos.length; i++) picos[i].classList.toggle('on', revealed && i < COLORED);
+      headline.classList.toggle('shown', revealed);
+      btn.classList.toggle('done', revealed);
+      btn.textContent = revealed ? '다시 보기 ↺' : '클릭해서 확인 →';
+    }
+    if (btn) btn.addEventListener('click', function () { revealed = !revealed; paint(); });
+  })();
+
+  // ---- interactive request-flow demo (form -> fill -> submit -> approve) ----
+  (function () {
+    function initDemo(root) {
+      var step = 1;
+      var max = parseInt(root.getAttribute('data-max-step') || '4', 10);
+      var fields = root.querySelectorAll('[data-field]');
+      var radios = root.querySelectorAll('[data-field-radio]');
+      var dots = root.querySelectorAll('.demo-step-dot');
+      var nextBtn = root.querySelector('[data-next]');
+      var resetBtn = root.querySelector('[data-reset]');
+
+      function fillField(el, on) {
+        var sample = el.getAttribute('data-sample') || '';
+        var empty = el.getAttribute('data-empty');
+        if (empty === null) empty = '';
+        var val = on ? sample : empty;
+        var tag = el.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') el.value = val;
+        else el.textContent = val;
+        el.classList.toggle('filled', on);
+      }
+      function setRadio(group, on) {
+        var sample = group.getAttribute('data-sample');
+        var opts = group.querySelectorAll('.df-radio-opt');
+        for (var i = 0; i < opts.length; i++) {
+          opts[i].classList.toggle('selected', on && opts[i].getAttribute('data-value') === sample);
+        }
+      }
+      function render() {
+        root.className = root.className.replace(/\bstep-\d\b/g, '').trim();
+        root.classList.add('step-' + step);
+        root.classList.toggle('submitted', step >= 3);
+        root.classList.toggle('approved', step >= 4);
+        for (var i = 0; i < fields.length; i++) fillField(fields[i], step >= 2);
+        for (var j = 0; j < radios.length; j++) setRadio(radios[j], step >= 2);
+        for (var k = 0; k < dots.length; k++) {
+          var n = parseInt(dots[k].getAttribute('data-n'), 10);
+          dots[k].classList.toggle('done', n < step);
+          dots[k].classList.toggle('active', n === step);
+        }
+        if (nextBtn) nextBtn.disabled = step >= max;
+      }
+      if (nextBtn) nextBtn.addEventListener('click', function () { if (step < max) { step++; render(); } });
+      if (resetBtn) resetBtn.addEventListener('click', function () { step = 1; render(); });
+      render();
+    }
+    var demos = document.querySelectorAll('.demo');
+    for (var i = 0; i < demos.length; i++) initDemo(demos[i]);
+  })();
+
+  // ---- library search + preview demo ----
+  (function () {
+    var list = document.getElementById('libList');
+    var search = document.getElementById('libSearch');
+    if (!list) return;
+    var rows = Array.prototype.slice.call(list.querySelectorAll('.lib-row'));
+    var lpTitle = document.getElementById('lpTitle');
+    var lpMeta = document.getElementById('lpMeta');
+    var lpPage = document.getElementById('lpPage');
+    var lpExcerpt = document.getElementById('lpExcerpt');
+
+    rows.forEach(function (row) {
+      row.addEventListener('click', function () {
+        rows.forEach(function (r) { r.classList.remove('active'); });
+        row.classList.add('active');
+        lpTitle.textContent = row.getAttribute('data-title');
+        lpMeta.textContent = row.getAttribute('data-issuer') + ' · 발간 ' + row.getAttribute('data-date') + ' · ' + row.getAttribute('data-cat');
+        lpPage.textContent = '1 / ' + row.getAttribute('data-pages');
+        if (lpExcerpt) lpExcerpt.textContent = row.getAttribute('data-excerpt') || '';
+      });
+    });
+    if (search) {
+      search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase();
+        rows.forEach(function (row) {
+          var hay = (row.getAttribute('data-title') + ' ' + row.getAttribute('data-issuer') + ' ' + row.getAttribute('data-cat')).toLowerCase();
+          row.style.display = hay.indexOf(q) !== -1 ? '' : 'none';
+        });
+      });
+    }
+  })();
+</script>
