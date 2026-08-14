@@ -313,6 +313,7 @@
   .auto-tile .at-k { font-family: var(--font-mono); font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--good-strong); }
   .auto-tile.ai .at-k { color: var(--accent-strong); }
   .auto-tile .at-v { font-size: 17px; line-height: 1.5; font-weight: 600; color: var(--ink); }
+  .auto-tile .at-n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: clamp(20px, 2.2vw, 27px); font-weight: 800; color: var(--accent-strong); line-height: 1.15; }
   .auto-arrow { align-self: center; color: var(--muted); font-family: var(--font-mono); font-size: 19px; flex-shrink: 0; }
 
   /* ---------- in-slide build steps (next arrow reveals .step blocks before advancing) ---------- */
@@ -1303,11 +1304,11 @@
       <div class="highlight-box rise" style="--rise-i:5; padding:16px 24px 18px;">
         <div class="k">비용 절감 — 지금, 그리고 내재화 로드맵</div>
         <div class="auto-strip" style="margin-top:6px;">
-          <div class="auto-tile" style="background:var(--surface);"><span class="at-k">운영 중 · 확정</span><span class="at-v">자산 관리 내재화(셀리즈 대체) — 연 110만 원 절감</span></div>
+          <div class="auto-tile" style="background:var(--surface);"><span class="at-k">운영 중 · 확정</span><span class="at-n">연 110만 원</span><span class="at-v">자산 관리 내재화 — 셀리즈 대체</span></div>
           <span class="auto-arrow">→</span>
-          <div class="auto-tile ai" style="background:var(--surface);"><span class="at-k">내재화 예정 · 추정</span><span class="at-v">CSPM(클라우드 보안 점검) 내재화 — 연 약 4,200만 원 절감</span></div>
+          <div class="auto-tile ai" style="background:var(--surface);"><span class="at-k">내재화 예정 · 추정</span><span class="at-n">연 약 4,200만 원</span><span class="at-v">CSPM(클라우드 보안 점검) 내재화</span></div>
           <span class="auto-arrow">→</span>
-          <div class="auto-tile ai" style="background:var(--accent-soft); border-color:var(--accent-soft-border);"><span class="at-k">확장 시 · 추정</span><span class="at-v">이미지 취약점 점검까지 내재화 — 연 <b>총 약 5,000만 원</b> 절감</span></div>
+          <div class="auto-tile ai" style="background:var(--accent-soft); border-color:var(--accent-soft-border);"><span class="at-k">확장 시 · 추정</span><span class="at-n">연 총 약 5,000만 원</span><span class="at-v">이미지 취약점 점검까지 내재화</span></div>
         </div>
       </div>
       <div class="highlight-box rise" style="--rise-i:6; padding:16px 24px;">
@@ -1584,7 +1585,7 @@
       '.people-top .k', '.people-reveal-btn', '.people-headline .of', '.people-legend .lg',
       '.focus-row .ft', '.duty-box', '.cat-legend .ct',
       '.sol-node .sl', '.sol-center .sl',
-      '.auto-tile .at-k', '.auto-tile .at-v',
+      '.auto-tile .at-k', '.auto-tile .at-v', '.auto-tile .at-n',
       '.chat-notice', '.chat-empty .ce-t', '.chat-empty .ce-s', '.bubble.user', '.bubble.ai p', '.chat-hint',
       '.stat .num', '.stat .lbl',
       '.info-grid dt', '.info-grid dd',
@@ -1796,9 +1797,12 @@
         "운영 중 · 확정": "Live · Confirmed",
         "내재화 예정 · 추정": "In-housing planned · Estimated",
         "확장 시 · 추정": "With expansion · Estimated",
-        "자산 관리 내재화(셀리즈 대체) — 연 110만 원 절감": "Asset management in-housed (replacing Selease) — ₩1.1M saved/yr",
-        "CSPM(클라우드 보안 점검) 내재화 — 연 약 4,200만 원 절감": "In-housing CSPM (cloud security posture) — est. ₩42M saved/yr",
-        "이미지 취약점 점검까지 내재화 — 연 <b>총 약 5,000만 원</b> 절감": "Add image vulnerability scanning — est. <b>₩50M total</b> saved/yr",
+        "연 110만 원": "₩1.1M / yr",
+        "연 약 4,200만 원": "est. ₩42M / yr",
+        "연 총 약 5,000만 원": "est. ₩50M total / yr",
+        "자산 관리 내재화 — 셀리즈 대체": "Asset management in-housed — replacing Selease",
+        "CSPM(클라우드 보안 점검) 내재화": "In-housing CSPM (cloud security posture)",
+        "이미지 취약점 점검까지 내재화": "Adding image vulnerability scanning",
         "[악성메일] invoice_확인요청.eml": "[Mail Scan] invoice_확인요청.eml",
         "AI 분석 중…": "AI analyzing…",
         "판정: 의심 메일": "Verdict: Suspicious",
@@ -2052,9 +2056,12 @@
         "운영 중 · 확정": "運用中 · 確定",
         "내재화 예정 · 추정": "内製化予定 · 推定",
         "확장 시 · 추정": "拡張時 · 推定",
-        "자산 관리 내재화(셀리즈 대체) — 연 110만 원 절감": "資産管理の内製化（セリーズ代替）— 年110万ウォン削減",
-        "CSPM(클라우드 보안 점검) 내재화 — 연 약 4,200만 원 절감": "CSPM（クラウドセキュリティ点検）の内製化 — 年約4,200万ウォン削減",
-        "이미지 취약점 점검까지 내재화 — 연 <b>총 약 5,000만 원</b> 절감": "イメージ脆弱性点検まで内製化 — 年<b>計約5,000万ウォン</b>削減",
+        "연 110만 원": "年110万ウォン",
+        "연 약 4,200만 원": "年約4,200万ウォン",
+        "연 총 약 5,000만 원": "年計約5,000万ウォン",
+        "자산 관리 내재화 — 셀리즈 대체": "資産管理の内製化 — セリーズ代替",
+        "CSPM(클라우드 보안 점검) 내재화": "CSPM（クラウドセキュリティ点検）の内製化",
+        "이미지 취약점 점검까지 내재화": "イメージ脆弱性点検まで内製化",
         "[악성메일] invoice_확인요청.eml": "[メール検査] invoice_확인요청.eml",
         "AI 분석 중…": "AI分析中…",
         "판정: 의심 메일": "判定：不審メール",
@@ -2308,9 +2315,12 @@
         "운영 중 · 확정": "运行中 · 已确定",
         "내재화 예정 · 추정": "计划内化 · 估算",
         "확장 시 · 추정": "扩展后 · 估算",
-        "자산 관리 내재화(셀리즈 대체) — 연 110만 원 절감": "资产管理内化（替代 Selease）— 每年节省 110 万韩元",
-        "CSPM(클라우드 보안 점검) 내재화 — 연 약 4,200만 원 절감": "内化 CSPM（云安全检查）— 估计每年节省约 4,200 万韩元",
-        "이미지 취약점 점검까지 내재화 — 연 <b>총 약 5,000만 원</b> 절감": "再内化镜像漏洞检查 — 估计每年<b>共节省约 5,000 万韩元</b>",
+        "연 110만 원": "每年 110 万韩元",
+        "연 약 4,200만 원": "每年约 4,200 万韩元",
+        "연 총 약 5,000만 원": "每年共约 5,000 万韩元",
+        "자산 관리 내재화 — 셀리즈 대체": "资产管理内化 — 替代 Selease",
+        "CSPM(클라우드 보안 점검) 내재화": "内化 CSPM（云安全检查）",
+        "이미지 취약점 점검까지 내재화": "再内化镜像漏洞检查",
         "[악성메일] invoice_확인요청.eml": "[邮件检查] invoice_확인요청.eml",
         "AI 분석 중…": "AI 分析中…",
         "판정: 의심 메일": "判定：可疑邮件",
