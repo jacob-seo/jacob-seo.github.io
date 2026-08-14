@@ -225,8 +225,14 @@
   @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
   .compare .col { border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; }
   .compare .col.on { background: var(--accent-soft); border-color: var(--accent-soft-border); }
-  .compare .col h4 { margin: 0 0 14px; font-size: 14.5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 700; }
+  .compare .col h4 { margin: 0 0 14px; font-size: 17.5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 700; }
   .compare .col.on h4 { color: var(--accent-strong); }
+  /* step build: next arrow lights up the human column in mint */
+  .compare .col.human { transition: background 0.45s ease, border-color 0.45s ease; }
+  .compare .col.human h4 { transition: color 0.45s ease; }
+  .step.step-shown + .compare .col.human { background: var(--good-soft); border-color: var(--good-soft-border); }
+  .step.step-shown + .compare .col.human h4 { color: var(--good-strong); }
+  @media print { .compare .col.human { background: var(--good-soft); border-color: var(--good-soft-border); } }
   .compare ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 13px; }
   .compare li { font-size: 19px; line-height: 1.55; padding-left: 17px; position: relative; }
   .compare li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
@@ -1272,12 +1278,13 @@
     <h2 class="headline">"AI는 초안까지, 최종 판단은 반드시 사람"</h2>
     <p class="subhead">반복적이고 정형화된 부분만 AI가 걸러주고, 판단은 여전히 사람이 합니다.</p>
     <div class="body">
+      <div class="step" aria-hidden="true" style="height:0; overflow:hidden;"></div>
       <div class="compare">
         <div class="col on">
           <h4>AI가 자동화하는 것</h4>
           <ul><li>VPN MAC 주소 등록 / 해제</li><li>악성 메일 스캔 · 판정 및 결과 안내</li><li>신청 접수 시 Jira 티켓 자동 생성</li></ul>
         </div>
-        <div class="col">
+        <div class="col human">
           <h4>사람이 최종 결정하는 것</h4>
           <ul><li>악성 메일 이상 징후 발견 시 심층 분석 · 대응</li><li>WAF · 방화벽 정책 예외 승인</li><li>VPN 자산번호-MAC 불일치 시 예외 확인</li></ul>
         </div>
