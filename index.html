@@ -296,8 +296,8 @@
   @media print { .sol-link { opacity: 1; } }
 
   /* ---------- category breakdown bar (requests since Jul 1) ---------- */
-  .cat-bar { display: flex; height: 18px; border-radius: 5px; overflow: hidden; margin: 12px 0 14px; }
-  .cat-seg { height: 100%; }
+  .cat-bar { display: flex; gap: 4px; height: 18px; margin: 12px 0 14px; }
+  .cat-seg { height: 100%; border-radius: 4px; }
   .cat-legend { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 15.5px; color: var(--ink-soft); }
   .cat-legend .cl { display: flex; align-items: center; gap: 8px; }
   .cat-legend .cs { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
@@ -1319,17 +1319,17 @@
         <div class="k">154건 구성 비율</div>
         <div class="cat-bar">
           <span class="cat-seg" style="width:33%; background:var(--good);"></span>
-          <span class="cat-seg" style="width:28%; background:color-mix(in srgb, var(--good) 75%, var(--surface));"></span>
-          <span class="cat-seg" style="width:20%; background:color-mix(in srgb, var(--good) 55%, var(--surface));"></span>
-          <span class="cat-seg" style="width:9%; background:color-mix(in srgb, var(--good) 35%, var(--surface));"></span>
-          <span class="cat-seg" style="width:10%; background:color-mix(in srgb, var(--good) 18%, var(--surface));"></span>
+          <span class="cat-seg" style="width:28%; background:color-mix(in srgb, var(--good) 70%, var(--surface));"></span>
+          <span class="cat-seg" style="width:20%; background:color-mix(in srgb, var(--good) 46%, var(--surface));"></span>
+          <span class="cat-seg" style="width:9%; background:color-mix(in srgb, var(--good) 28%, var(--surface));"></span>
+          <span class="cat-seg" style="width:10%; background:color-mix(in srgb, var(--good) 13%, var(--surface));"></span>
         </div>
         <div class="cat-legend">
           <span class="cl"><span class="cs" style="background:var(--good);"></span><span class="ct">계정/권한 <b>51건</b> · 33%</span></span>
-          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 75%, var(--surface));"></span><span class="ct">네트워크/인프라 <b>43건</b> · 28%</span></span>
-          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 55%, var(--surface));"></span><span class="ct">보안성·개인정보·법무 검토 <b>31건</b> · 20%</span></span>
-          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 35%, var(--surface));"></span><span class="ct">자산/장비 <b>14건</b> · 9%</span></span>
-          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 18%, var(--surface));"></span><span class="ct">그 외(보안솔루션·교육 등) <b>15건</b> · 10%</span></span>
+          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 70%, var(--surface));"></span><span class="ct">네트워크/인프라 <b>43건</b> · 28%</span></span>
+          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 46%, var(--surface));"></span><span class="ct">보안성·개인정보·법무 검토 <b>31건</b> · 20%</span></span>
+          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 28%, var(--surface));"></span><span class="ct">자산/장비 <b>14건</b> · 9%</span></span>
+          <span class="cl"><span class="cs" style="background:color-mix(in srgb, var(--good) 13%, var(--surface));"></span><span class="ct">그 외(보안솔루션·교육 등) <b>15건</b> · 10%</span></span>
         </div>
       </div>
       <p class="point" style="margin:0;">그럼 이렇게 확보한 시간으로, 보안팀은 무엇을 할까요? →</p>
